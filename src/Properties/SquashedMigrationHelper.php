@@ -2,12 +2,9 @@
 
 namespace NunoMaduro\Larastan\Properties;
 
+use iamcal\SQLParser;
+use iamcal\SQLParserSyntaxException;
 use NunoMaduro\Larastan\Properties\Schema\PhpMyAdminDataTypeToPhpTypeConverter;
-use PhpMyAdmin\SqlParser\Components\CreateDefinition;
-use PhpMyAdmin\SqlParser\Exceptions\ParserException;
-use PhpMyAdmin\SqlParser\Parser;
-use PhpMyAdmin\SqlParser\Statement;
-use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use PHPStan\File\FileHelper;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -65,35 +62,35 @@ final class SquashedMigrationHelper
             }
 
             try {
-                $parser = new Parser($fileContents);
-            } catch (ParserException $exception) {
+                $parser = new SQLParser();
+                $parser->throw_on_bad_syntax = true;
+                $tableDefinitions = $parser->parse($fileContents);
+            } catch (SQLParserSyntaxException $exception) {
                 // TODO: re-throw the exception with a clear message?
                 continue;
             }
 
-            /** @var CreateStatement[] $createStatements */
-            $createStatements = array_filter($parser->statements, static fn (Statement $statement) => $statement instanceof CreateStatement && $statement->name !== null);
-
-            foreach ($createStatements as $createStatement) {
-                if ($createStatement->name?->table === null || array_key_exists($createStatement->name->table, $tables)) {
+            foreach ($tableDefinitions as $definition) {
+                if (array_key_exists($definition['name'], $tables)) {
+                    continue;
+                } elseif (!is_array($definition['fields'])) {
                     continue;
                 }
 
-                $table = new SchemaTable($createStatement->name->table);
-
-                if (! is_array($createStatement->fields)) {
-                    continue;
-                }
-
-                foreach ($createStatement->fields as $field) {
-                    if ($field->name === null || $field->type === null) {
+                $table = new SchemaTable($definition['name']);
+                foreach ($definition['fields'] as $field) {
+                    if ($field['name'] === null || $field['type'] === null) {
                         continue;
                     }
 
-                    $table->setColumn(new SchemaColumn($field->name, $this->converter->convert($field->type), $this->isNullable($field)));
+                    $table->setColumn(new SchemaColumn(
+                        $field['name'],
+                        $this->converter->convert($field['type']),
+                        $this->isNullable($field)
+                    ));
                 }
 
-                $tables[$createStatement->name->table] = $table;
+                $tables[$definition['name']] = $table;
             }
         }
 
@@ -124,12 +121,18 @@ final class SquashedMigrationHelper
         return $schemaFiles;
     }
 
-    private function isNullable(CreateDefinition $definition): bool
+    /**
+     * @param array<string, string|bool|null> $definition
+     * @return bool
+     */
+    private function isNullable(array $definition): bool
     {
-        if ($definition->options?->has('NOT NULL')) {
+        if (!array_key_exists('null', $definition)) {
+            return false;
+        } else if (is_bool($definition['null'])) {
+            return $definition['null'];
+        } else {
             return false;
         }
-
-        return true;
     }
 }
