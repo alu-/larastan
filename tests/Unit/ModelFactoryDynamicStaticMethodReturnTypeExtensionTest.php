@@ -2,8 +2,8 @@
 
 namespace Unit;
 
-use NunoMaduro\Larastan\ReturnTypes\ModelFactoryDynamicStaticMethodReturnTypeExtension;
-use NunoMaduro\Larastan\Types\Factory\ModelFactoryType;
+use Larastan\Larastan\ReturnTypes\ModelFactoryDynamicStaticMethodReturnTypeExtension;
+use Larastan\Larastan\Types\Factory\ModelFactoryType;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
@@ -73,7 +73,7 @@ class ModelFactoryDynamicStaticMethodReturnTypeExtensionTest extends PHPStanTest
         return [__DIR__.'/../phpstan-tests.neon'];
     }
 
-    public function argumentProvider(): \Generator
+    public static function argumentProvider(): \Generator
     {
         yield [new ConstantIntegerType(1), TrinaryLogic::createNo()];
         yield [new ConstantIntegerType(0), TrinaryLogic::createNo()];

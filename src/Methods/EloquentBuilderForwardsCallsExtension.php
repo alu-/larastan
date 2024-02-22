@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace NunoMaduro\Larastan\Methods;
+namespace Larastan\Larastan\Methods;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use NunoMaduro\Larastan\Reflection\EloquentBuilderMethodReflection;
+use Larastan\Larastan\Reflection\EloquentBuilderMethodReflection;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -105,7 +105,7 @@ final class EloquentBuilderForwardsCallsExtension implements MethodsClassReflect
         if ($ref === null) {
             // Special case for `SoftDeletes` trait
             if (
-                in_array($methodName, ['withTrashed', 'onlyTrashed', 'withoutTrashed', 'restore'], true) &&
+                in_array($methodName, ['withTrashed', 'onlyTrashed', 'withoutTrashed', 'restore', 'createOrRestore', 'restoreOrCreate'], true) &&
                 array_key_exists(SoftDeletes::class, $modelReflection->getTraits(true))
             ) {
                 $ref = $this->reflectionProvider->getClass(SoftDeletes::class)->getMethod($methodName, new OutOfClassScope());
@@ -116,6 +116,16 @@ final class EloquentBuilderForwardsCallsExtension implements MethodsClassReflect
                         $classReflection,
                         ParametersAcceptorSelector::selectSingle($ref->getVariants())->getParameters(),
                         new IntegerType(),
+                        ParametersAcceptorSelector::selectSingle($ref->getVariants())->isVariadic()
+                    );
+                }
+
+                if ($methodName === 'restoreOrCreate' || $methodName === 'createOrRestore') {
+                    return new EloquentBuilderMethodReflection(
+                        $methodName,
+                        $classReflection,
+                        ParametersAcceptorSelector::selectSingle($ref->getVariants())->getParameters(),
+                        $modelType,
                         ParametersAcceptorSelector::selectSingle($ref->getVariants())->isVariadic()
                     );
                 }

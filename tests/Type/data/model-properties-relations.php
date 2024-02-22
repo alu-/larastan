@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 use function PHPStan\Testing\assertType;
@@ -16,6 +17,7 @@ function foo(Foo $foo, Bar $bar, Account $account): void
 {
     assertType('Illuminate\Database\Eloquent\Collection<int, ModelPropertiesRelations\Bar>', $foo->hasManyRelation);
     assertType('Illuminate\Database\Eloquent\Collection<int, ModelPropertiesRelations\Bar>', $foo->hasManyThroughRelation);
+    assertType('ModelPropertiesRelations\Baz|null', $foo->hasOneThroughRelation);
     assertType('ModelPropertiesRelations\Foo', $bar->belongsToRelation);
     assertType('mixed', $bar->morphToRelation);
     assertType('App\Account|App\User', $bar->morphToUnionRelation);
@@ -24,6 +26,7 @@ function foo(Foo $foo, Bar $bar, Account $account): void
     assertType('App\User|null', $account->ownerRelation);
     assertType('Illuminate\Database\Eloquent\Collection<int, Illuminate\Database\Eloquent\Model>|Illuminate\Database\Eloquent\Model|null', $foo->relationReturningUnion);
     assertType('Illuminate\Database\Eloquent\Collection<int, ModelPropertiesRelations\Bar>|ModelPropertiesRelations\Baz|null', $foo->relationReturningUnion2);
+    assertType('Illuminate\Database\Eloquent\Collection<int, ModelPropertiesRelations\Foo>', $foo->ancestors);
 }
 
 /** @property string $name */
@@ -41,6 +44,12 @@ class Foo extends Model
         return $this->hasManyThrough(Bar::class, User::class);
     }
 
+    /** @return HasOneThrough<Baz> */
+    public function hasOneThroughRelation(): HasOneThrough
+    {
+        return $this->hasOneThrough(Baz::class, User::class);
+    }
+
     public function relationReturningUnion(): HasMany|BelongsTo
     {
         return $this->name === 'foo' ? $this->hasMany(Bar::class) : $this->belongsTo(Baz::class);
@@ -50,6 +59,12 @@ class Foo extends Model
     public function relationReturningUnion2(): HasMany|BelongsTo
     {
         return $this->name === 'foo' ? $this->hasMany(Bar::class) : $this->belongsTo(Baz::class);
+    }
+
+    /** @return Ancestors<Foo> */
+    public function ancestors(): Ancestors
+    {
+        //
     }
 }
 
@@ -78,5 +93,9 @@ class Bar extends Model
 }
 
 class Baz extends Model
+{
+}
+
+class Ancestors extends HasMany
 {
 }

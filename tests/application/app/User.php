@@ -74,6 +74,7 @@ class User extends Authenticatable
         'array' => 'array',
         'json' => 'json',
         'collection' => 'collection',
+        'nullable_collection' => 'collection',
         'date' => 'date',
         'datetime' => 'datetime',
         'immutable_date' => 'immutable_date',
@@ -122,6 +123,16 @@ class User extends Authenticatable
 
     /** @phpstan-return HasMany<Account> */
     public function accounts(): HasMany
+    {
+        return $this->hasMany(Account::class);
+    }
+
+    public function accounts_snake(): HasMany
+    {
+        return $this->hasMany(Account::class);
+    }
+
+    public function accountsCamel(): HasMany
     {
         return $this->hasMany(Account::class);
     }

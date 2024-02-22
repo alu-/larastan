@@ -86,7 +86,7 @@ parameters:
 
 ---
 
-**NOTE**: This rule is currently in beta! If you want to improve it's analysis you can check out the issue [here](https://github.com/nunomaduro/larastan/issues/676) and contribute!
+**NOTE**: This rule is currently in beta! If you want to improve it's analysis you can check out the issue [here](https://github.com/larastan/larastan/issues/676) and contribute!
 
 ---
 
@@ -176,6 +176,7 @@ Supported Eloquent builder methods are:
 - `doesntHave`
 - `orDoesntHave`
 - `whereHas`
+- `withWhereHas`
 - `orWhereHas`
 - `whereDoesntHave`
 - `orWhereDoesntHave`
@@ -356,3 +357,31 @@ parameters:
 - `@includeUnless` Blade directive.
 - `@includeWhen` Blade directive.
 - `@includeFirst` Blade directive.
+
+## NoEnvCallsOutsideOfConfig
+
+Checks for `env` calls out side of the config directory which returns null
+when the config is cached.
+
+#### Examples
+
+```php
+env(...);
+```
+
+Will result in the following error:
+
+```
+Called 'env' outside of the config directory which returns null when the config is cached, use 'config'.")
+```
+
+#### Configuration
+
+This rule is disabled by default. To enable, add:
+
+```neon
+parameters:
+    noEnvCallsOutsideOfConfig: true
+```
+
+to your `phpstan.neon` file.

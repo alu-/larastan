@@ -1,10 +1,15 @@
 <?php
 
-namespace NunoMaduro\Larastan\Properties;
+namespace Larastan\Larastan\Properties;
 
+use Larastan\Larastan\Properties\Schema\PhpMyAdminDataTypeToPhpTypeConverter;
+use PhpMyAdmin\SqlParser\Components\CreateDefinition;
+use PhpMyAdmin\SqlParser\Exceptions\ParserException;
+use PhpMyAdmin\SqlParser\Parser;
+use PhpMyAdmin\SqlParser\Statement;
+use PhpMyAdmin\SqlParser\Statements\CreateStatement;
 use iamcal\SQLParser;
 use iamcal\SQLParserSyntaxException;
-use NunoMaduro\Larastan\Properties\Schema\PhpMyAdminDataTypeToPhpTypeConverter;
 use PHPStan\File\FileHelper;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

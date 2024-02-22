@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace NunoMaduro\Larastan\Rules;
+namespace Larastan\Larastan\Rules;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
 use PhpParser\Node;
@@ -57,6 +57,7 @@ class RelationExistenceRule implements Rule
             'doesntHave',
             'orDoesntHave',
             'whereHas',
+            'withWhereHas',
             'orWhereHas',
             'whereDoesntHave',
             'orWhereDoesntHave',

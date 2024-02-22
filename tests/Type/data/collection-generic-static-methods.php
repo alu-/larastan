@@ -5,6 +5,7 @@ use App\TransactionCollection;
 use App\User;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\LazyCollection;
 
 use function PHPStan\Testing\assertType;
 
@@ -80,10 +81,10 @@ assertType('App\TransactionCollection<(int|string), int>', $customEloquentCollec
 assertType('App\UserCollection', $secondCustomEloquentCollection->combine([1]));
 assertType('Illuminate\Support\Collection<(int|string), string>', $items->combine(['foo']));
 
-assertType('App\User|Illuminate\Database\Eloquent\Collection<int, App\User>|null', $collection->pop(1));
-assertType('App\Transaction|App\TransactionCollection<int, App\Transaction>|null', $customEloquentCollection->pop(2));
-assertType('App\User|App\UserCollection|null', $secondCustomEloquentCollection->pop(2));
-assertType('Illuminate\Support\Collection<int, int>|int|null', $items->pop(3));
+assertType('App\User|null', $collection->pop(1));
+assertType('App\TransactionCollection<int, App\Transaction>', $customEloquentCollection->pop(2));
+assertType('App\UserCollection', $secondCustomEloquentCollection->pop(2));
+assertType('Illuminate\Support\Collection<int, int>', $items->pop(3));
 
 assertType('App\User', $collection->random());
 assertType('Illuminate\Database\Eloquent\Collection<int, App\User>', $collection->random(1));
@@ -91,10 +92,10 @@ assertType('App\TransactionCollection<int, App\Transaction>', $customEloquentCol
 assertType('App\UserCollection', $secondCustomEloquentCollection->random(2));
 assertType('Illuminate\Support\Collection<int, int>', $items->random(3));
 
-assertType('App\User|Illuminate\Database\Eloquent\Collection<int, App\User>|null', $collection->shift(1));
-assertType('App\Transaction|App\TransactionCollection<int, App\Transaction>|null', $customEloquentCollection->shift(2));
-assertType('App\User|App\UserCollection|null', $secondCustomEloquentCollection->shift(2));
-assertType('Illuminate\Support\Collection<int, int>|int|null', $items->shift(3));
+assertType('App\User|null', $collection->shift(1));
+assertType('App\TransactionCollection<int, App\Transaction>', $customEloquentCollection->shift(2));
+assertType('App\UserCollection', $secondCustomEloquentCollection->shift(2));
+assertType('Illuminate\Support\Collection<int, int>', $items->shift(3));
 
 assertType('Illuminate\Database\Eloquent\Collection<int, Illuminate\Database\Eloquent\Collection<int, App\User>>', $collection->sliding(1));
 assertType('App\TransactionCollection<int, App\TransactionCollection<int, App\Transaction>>', $customEloquentCollection->sliding(2));
@@ -161,6 +162,7 @@ assertType('Illuminate\Support\Collection<int, int>', SupportCollection::wrap([1
 assertType('Illuminate\Database\Eloquent\Collection<int, App\User>', EloquentCollection::times(10, fn ($int) => new User));
 assertType('App\TransactionCollection<int, App\Transaction>', TransactionCollection::times(10, fn ($int) => new Transaction));
 assertType('Illuminate\Support\Collection<int, int>', SupportCollection::times(10, fn ($int) => 5));
+assertType('Illuminate\Support\LazyCollection<int, int>', LazyCollection::times(10, fn ($int) => 5));
 
 // In runtime it returns `Illuminate\Support\Collection<string, Illuminate\Database\Eloquent\Collection<int, int>>`
 // Might be fixed in Laravel or needs a separate extension
@@ -181,6 +183,11 @@ assertType(
     $items->flatMap(function (int $int) {
         return [$int * 2];
     })
+);
+
+assertType(
+    'Illuminate\Support\LazyCollection<int, int>',
+    LazyCollection::times(10, fn ($int) => 5)->flatMap(fn ($i) => [$i * 2]),
 );
 
 assertType('Illuminate\Support\Collection<(int|string), Illuminate\Support\Collection<(int|string), array{id: int, type: string}>>', collect([

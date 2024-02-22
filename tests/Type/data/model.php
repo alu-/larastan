@@ -16,6 +16,7 @@ use function PHPStan\Testing\assertType;
 function testFind()
 {
     assertType('App\User|null', User::find(1));
+    assertType('Model\Bar|null', Bar::findByHashId(1));
 }
 
 function testFindOnGenericModel(Model $model)
@@ -134,6 +135,13 @@ function testStaticDynamicWhere()
 function testWhereIn()
 {
     assertType('Illuminate\Database\Eloquent\Builder<App\Thread>', (new Thread)->whereIn('id', [1, 2, 3]));
+}
+
+function testWithWhereHas()
+{
+    assertType('Illuminate\Database\Eloquent\Builder<App\User>', (new User)->withWhereHas('accounts', function ($query) {
+        return $query->where('active', true);
+    }));
 }
 
 function testIncrement(User $user)
@@ -342,6 +350,16 @@ function testRelationMethods(): void
         //assertType('Illuminate\Database\Eloquent\Builder<App\User>', $query);
     });
 
+    User::withWhereHas('accounts', function (Builder $query) {
+        assertType('Illuminate\Database\Eloquent\Builder', $query);
+        //assertType('Illuminate\Database\Eloquent\Builder<App\Account>', $query);
+    });
+
+    Post::withWhereHas('users', function (Builder $query) {
+        assertType('Illuminate\Database\Eloquent\Builder', $query);
+        //assertType('Illuminate\Database\Eloquent\Builder<App\User>', $query);
+    });
+
     User::orWhereHas('accounts', function (Builder $query) {
         assertType('Illuminate\Database\Eloquent\Builder', $query);
         //assertType('Illuminate\Database\Eloquent\Builder<App\Account>', $query);
@@ -451,4 +469,27 @@ class Foo
     {
         assertType('Illuminate\Database\Eloquent\Builder<App\User>', $this->user::query());
     }
+}
+
+class Bar extends Model
+{
+    use HasBar;
+}
+
+trait HasBar
+{
+    public static function decodeHashId(string $hash_id): array
+    {
+        return [];
+    }
+
+    public static function findByHashId(string $id): ?self
+    {
+        return self::find(static::decodeHashId($id))->first();
+    }
+}
+
+function testRestoreOrCreate(): void
+{
+    assertType('App\User', User::restoreOrCreate(['id' => 1]));
 }

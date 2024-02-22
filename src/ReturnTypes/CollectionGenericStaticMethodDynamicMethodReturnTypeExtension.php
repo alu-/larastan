@@ -1,6 +1,6 @@
 <?php
 
-namespace NunoMaduro\Larastan\ReturnTypes;
+namespace Larastan\Larastan\ReturnTypes;
 
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -109,6 +109,10 @@ class CollectionGenericStaticMethodDynamicMethodReturnTypeExtension implements D
 
         $genericTypes = $returnTypeClassReflection->typeMapToList($returnTypeClassReflection->getActiveTemplateTypeMap());
 
+        if ($genericTypes === []) {
+            return new ObjectType($classReflection->getName());
+        }
+
         // If the key type is gonna be a model, we change it to string
         if ((new ObjectType(Model::class))->isSuperTypeOf($genericTypes[0])->yes()) {
             $genericTypes[0] = new StringType();
@@ -123,7 +127,9 @@ class CollectionGenericStaticMethodDynamicMethodReturnTypeExtension implements D
                 if ($type instanceof GenericObjectType && (($innerTypeReflection = $type->getClassReflection()) !== null)) {
                     $genericTypes = $innerTypeReflection->typeMapToList($innerTypeReflection->getActiveTemplateTypeMap());
 
-                    return new GenericObjectType($classReflection->getName(), $genericTypes);
+                    if ($classReflection->isSubclassOf($type->getClassName())) {
+                        return new GenericObjectType($classReflection->getName(), $genericTypes);
+                    }
                 }
 
                 return $traverse($type);

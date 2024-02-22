@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Rules;
 
-use NunoMaduro\Larastan\Rules\ModelProperties\ModelPropertiesRuleHelper;
-use NunoMaduro\Larastan\Rules\ModelProperties\ModelPropertyRule;
-use NunoMaduro\Larastan\Rules\ModelRuleHelper;
+use Larastan\Larastan\Rules\ModelProperties\ModelPropertiesRuleHelper;
+use Larastan\Larastan\Rules\ModelProperties\ModelPropertyRule;
+use Larastan\Larastan\Rules\ModelRuleHelper;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleLevelHelper;
 use PHPStan\Testing\RuleTestCase;
@@ -66,6 +66,9 @@ class ModelPropertyRuleTest extends RuleTestCase
                 'Property \'foo\' does not exist in App\\User model.',
                 32,
             ],
+            ["Property 'foo' does not exist in App\\User model.", 53],
+            ["Property 'bar' does not exist in App\\User model.", 53],
+            ["Property 'foo' does not exist in App\\User model.", 54],
         ]);
     }
 
@@ -97,6 +100,15 @@ class ModelPropertyRuleTest extends RuleTestCase
                 10,
             ],
         ]);
+
+        if (version_compare(LARAVEL_VERSION, '10.20.0', '>=')) {
+            $this->analyse([__DIR__.'/data/model-property-relation-l10-20.php'], [
+                [
+                    'Property \'foo\' does not exist in App\\Account model.',
+                    4,
+                ]
+            ]);
+        }
     }
 
     public function testModelPropertyRuleOnModel(): void

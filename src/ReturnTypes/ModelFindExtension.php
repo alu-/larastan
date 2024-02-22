@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace NunoMaduro\Larastan\ReturnTypes;
+namespace Larastan\Larastan\ReturnTypes;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Str;
-use NunoMaduro\Larastan\Support\CollectionHelper;
+use Larastan\Larastan\Support\CollectionHelper;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\Scope;
@@ -77,7 +77,7 @@ final class ModelFindExtension implements DynamicStaticMethodReturnTypeExtension
         $class = $methodCall->class;
 
         if ($class instanceof Name) {
-            $modelNames = [$class->toString()];
+            $modelNames = [$scope->resolveName($class)];
         } else {
             $type = $scope->getType($class);
 
